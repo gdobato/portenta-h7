@@ -1,0 +1,44 @@
+name: ci
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain : stable
+        components: rustfmt
+    - uses: actions-rs/cargo@v1
+      with: 
+        command: fmt
+        args: --all -- --check
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: thumbv7em-none-eabihf
+        override: true
+    - name: Prologue
+      run: cargo update
+    - name: Lib release
+      run: | 
+        cargo build --release --verbose
+    - name: Lib debug
+      run: | 
+        cargo build --verbose
+    - name: Examples release
+      run: | 
+        cargo build --examples --release --verbose
+    - name: Examples debug
+      run: | 
+        cargo build --examples --verbose

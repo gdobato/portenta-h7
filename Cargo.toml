@@ -1,0 +1,15 @@
+[package]
+name = "portenta-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+stm32h7xx-hal = {version = "0.13.1", features= ["stm32h747cm7","rt"]}
+
+[dev-dependencies]
+embedded-hal = "0.2"
+non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.1" }
+non-preemptive-scheduler-macros = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.1" }
+rtt-target = { version = "0.3.0", features = ["cortex-m"] }

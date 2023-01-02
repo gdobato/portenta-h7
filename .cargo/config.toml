@@ -1,0 +1,10 @@
+[build]
+target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = 'probe-run --chip STM32H747XIHx'
+
+rustflags = [
+  # Use LLD as the default linker
+  "-C", "link-arg=-Tlink.x",
+]
