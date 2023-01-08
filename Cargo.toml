@@ -10,6 +10,6 @@ stm32h7xx-hal = {version = "0.13.1", features= ["stm32h747cm7","rt"]}
 
 [dev-dependencies]
 embedded-hal = "0.2"
-non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.1" }
-non-preemptive-scheduler-macros = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.1" }
+non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2", features = ["panic"] }
+non-preemptive-scheduler-macros = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2" }
 rtt-target = { version = "0.3.0", features = ["cortex-m"] }
