@@ -1,0 +1,32 @@
+  {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "probe-rs-debug",
+        "request": "launch",
+        "name": "Led blinky",
+        "cwd": "${workspaceFolder}",
+        "speed": 4000,
+        "runtimeExecutable": "probe-rs-debugger",
+        "runtimeArgs": ["debug"],
+        "chip": "STM32H747XIHx",
+        "flashingConfig": {
+          "flashingEnabled": false,
+          "resetAfterFlashing": true,
+          "haltAfterReset": true
+        },
+        "coreConfigs": [
+          {
+            "coreIndex": 1,
+            "programBinary": "./target/thumbv7em-none-eabihf/debug/examples/led_blinky",
+            "svdFile": "./config/svd/STM32H747_CM7.svd"
+          }
+        ],
+        "env": {
+          "RUST_LOG": "info"
+        },
+        "consoleLogLevel": "Console"
+      }
+    ]
+  }
+
