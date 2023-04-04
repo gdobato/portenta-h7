@@ -7,9 +7,9 @@ edition = "2021"
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
 stm32h7xx-hal = { version = "0.14.0", features = ["stm32h747cm7","rt"] }
+rtt-target = { version = "0.3.0", features = ["cortex-m"] }
 
 [dev-dependencies]
 embedded-hal = "0.2"
 non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2", features = ["panic"] }
 non-preemptive-scheduler-macros = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2" }
-rtt-target = { version = "0.3.0", features = ["cortex-m"] }
