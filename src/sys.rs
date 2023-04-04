@@ -1,7 +1,7 @@
 //! Sys
 //!
-//! Clear up previous clock initiliation done in bootloader
-//! Enable external oscilator for HSE sourcing (27 MHz)
+//! Clear up previous clock initilization done in bootloader
+//! Enable external oscilator for HSE sourcing (25 MHz)
 //!
 
 use stm32h7xx_hal::pac;
