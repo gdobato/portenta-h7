@@ -5,7 +5,7 @@
 
 use core::cell::RefCell;
 use cortex_m_rt::entry;
-use hal::{gpio::*, pac, prelude::*};
+use hal::{gpio::*, pac, prelude::*, rcc};
 use non_preemptive_scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 use non_preemptive_scheduler_macros as scheduler;
 #[allow(unused_imports)]
@@ -21,7 +21,7 @@ static BLUE_LED: UnShared<RefCell<Option<PK7<Output<PushPull>>>>> =
     UnShared::new(RefCell::new(None));
 
 // Create scheduler
-#[scheduler::new(task_count = 3, core_freq = 100_000_000)]
+#[scheduler::new(task_count = 3, core_freq = 480_000_000)]
 struct NonPreemptiveScheduler;
 
 // Functions which are bound to task runnables
@@ -44,26 +44,40 @@ fn blue_led_blinky(_: EventMask) {
 }
 
 fn bsp_init() {
+    let sysclk = portenta_rs::sys::Clk::take().unwrap();
     let dp = pac::Peripherals::take().unwrap();
 
-    // Power and clock distribution
-    let pwrcfg = dp.PWR.constrain().freeze();
+    sysclk.reset().enable_ext_clock();
+
+    let pwr = dp.PWR.constrain();
+    let pwrcfg = pwr.vos0(&dp.SYSCFG).freeze();
+
     let ccdr = dp
         .RCC
         .constrain()
-        .sys_ck(100.MHz())
+        .use_hse(27.MHz())
+        .bypass_hse()
+        .sys_ck(480.MHz())
+        .hclk(240.MHz())
+        .pll1_strategy(rcc::PllConfigStrategy::Iterative)
+        .pll1_q_ck(240.MHz())
+        .pll2_strategy(rcc::PllConfigStrategy::Iterative)
+        .pll2_p_ck(100.MHz())
+        .pll3_strategy(rcc::PllConfigStrategy::Iterative)
+        .pll3_p_ck(100.MHz())
+        .pll3_r_ck(100.MHz())
         .freeze(pwrcfg, &dp.SYSCFG);
 
     // User LEDs
-    let gpio_k = dp.GPIOK.split(ccdr.peripheral.GPIOK);
+    let gpiok = dp.GPIOK.split(ccdr.peripheral.GPIOK);
     RED_LED.borrow().replace(Some(
-        gpio_k.pk5.into_push_pull_output_in_state(PinState::High),
+        gpiok.pk5.into_push_pull_output_in_state(PinState::High),
     ));
     GREEN_LED.borrow().replace(Some(
-        gpio_k.pk6.into_push_pull_output_in_state(PinState::High),
+        gpiok.pk6.into_push_pull_output_in_state(PinState::High),
     ));
     BLUE_LED.borrow().replace(Some(
-        gpio_k.pk7.into_push_pull_output_in_state(PinState::High),
+        gpiok.pk7.into_push_pull_output_in_state(PinState::High),
     ));
 }
 
@@ -73,12 +87,12 @@ fn main() -> ! {
 
     bsp_init();
 
-    // Create and add tasks
+    // Add tasks
     scheduler::add_task!(
         "red_led_blinky",
         None,
         Some(red_led_blinky),
-        Some(1_000),
+        Some(250),
         Some(3)
     );
 
@@ -86,7 +100,7 @@ fn main() -> ! {
         "green_led_blinky",
         None,
         Some(green_led_blinky),
-        Some(1_000),
+        Some(500),
         Some(281)
     );
 
