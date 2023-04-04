@@ -4,9 +4,9 @@
 #![no_main]
 
 use core::cell::RefCell;
-use non_preemptive_scheduler::{resources::UnShared, EventMask, Scheduler, Task};
-use non_preemptive_scheduler_macros as scheduler;
+use non_preemptive_scheduler as scheduler;
 use portenta_rs::{BlueUserLed, GreenUserLed, RedUserLed, UserLeds};
+use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 
 // Static and interior mutable entities
 static RED_LED: UnShared<RefCell<Option<RedUserLed>>> = UnShared::new(RefCell::new(None));
