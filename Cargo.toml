@@ -11,8 +11,7 @@ rtt-target = { version = "0.3.0", features = ["cortex-m"] }
 
 [dev-dependencies]
 embedded-hal = "0.2"
-non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2", features = ["panic"] }
-non-preemptive-scheduler-macros = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.2" }
+non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.3", features = ["panic"] }
 
 [profile.dev]
 opt-level = 0
