@@ -32,7 +32,6 @@ fn green_led_blinky(_: EventMask) {
 
 fn blue_led_blinky(_: EventMask) {
     if let Some(blue_led) = BLUE_LED.borrow().borrow_mut().as_mut() {
-        portenta_rs::log!("blinky");
         blue_led.toggle();
     }
 }
@@ -53,7 +52,7 @@ fn main() -> ! {
         "red_led_blinky",
         None,
         Some(red_led_blinky),
-        Some(250),
+        Some(1_000),
         Some(3)
     );
 
@@ -61,7 +60,7 @@ fn main() -> ! {
         "green_led_blinky",
         None,
         Some(green_led_blinky),
-        Some(500),
+        Some(1_000),
         Some(281)
     );
 
