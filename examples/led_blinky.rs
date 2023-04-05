@@ -38,10 +38,10 @@ fn blue_led_blinky(_: EventMask) {
 
 #[portenta_rs::entry]
 fn main() -> ! {
-    let board = portenta_rs::Board::init().unwrap();
-
-    // User LEDs
-    let UserLeds { red, green, blue } = board.user_leds;
+    let portenta_rs::Board {
+        user_leds: UserLeds { red, green, blue },
+        ..
+    } = portenta_rs::Board::init().unwrap();
 
     RED_LED.borrow().replace(Some(red));
     GREEN_LED.borrow().replace(Some(green));

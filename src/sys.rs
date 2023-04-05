@@ -4,37 +4,39 @@
 //! Enable external oscilator for HSE sourcing (25 MHz)
 //!
 
+#![allow(dead_code)]
+
 use stm32h7xx_hal::pac;
 
 pub struct Unreset;
 pub struct Reset;
-pub struct ExtClockEnabled;
-pub struct ExtClockDisabled;
 
-pub struct Clk;
-
-pub struct ClkCfg<State, ExtClock> {
+pub struct Clk<State> {
     _state: State,
-    _ext_clock: ExtClock,
 }
 
-impl Clk {
-    pub fn take() -> Option<ClkCfg<Unreset, ExtClockDisabled>> {
-        static mut TAKEN: bool = false;
-        if unsafe { TAKEN } {
-            None
-        } else {
-            unsafe { TAKEN = true };
-            Some(ClkCfg {
-                _state: Unreset,
-                _ext_clock: ExtClockDisabled,
-            })
-        }
+pub type ClkSource = pac::rcc::cfgr::SWS_A;
+pub type ClkSourceVariant = Option<ClkSource>;
+pub type PllSourceVariant = pac::rcc::pllckselr::PLLSRC_A;
+
+impl Clk<Unreset> {
+    pub fn new() -> Clk<Unreset> {
+        Clk { _state: Unreset }
+    }
+
+    #[inline(always)]
+    pub fn get_source() -> ClkSourceVariant {
+        unsafe { (*pac::RCC::PTR).cfgr.read().sws().variant() }
+    }
+
+    #[inline(always)]
+    pub fn get_pll_source() -> PllSourceVariant {
+        unsafe { (*pac::RCC::PTR).pllckselr.read().pllsrc().variant() }
     }
 }
 
-impl<State, ExtClock> ClkCfg<State, ExtClock> {
-    pub fn reset(self) -> ClkCfg<Reset, ExtClockDisabled> {
+impl Clk<Unreset> {
+    pub fn reset(self) -> Clk<Reset> {
         unsafe {
             let rcc_blck = &(*pac::RCC::PTR);
             // Enable HSI and load reset values
@@ -86,15 +88,12 @@ impl<State, ExtClock> ClkCfg<State, ExtClock> {
             rcc_blck.pll2fracr.reset();
             rcc_blck.pll3fracr.reset();
         }
-        ClkCfg {
-            _state: Reset,
-            _ext_clock: ExtClockDisabled,
-        }
+        Clk { _state: Reset }
     }
 }
 
-impl<ExtClock> ClkCfg<Reset, ExtClock> {
-    pub fn enable_ext_clock(self) -> ClkCfg<Reset, ExtClockEnabled> {
+impl Clk<Reset> {
+    pub fn enable_ext_clock(self) -> Clk<Reset> {
         unsafe {
             // Enable GPIOH clock
             let rcc_blck = &(*pac::RCC::PTR);
@@ -109,13 +108,10 @@ impl<ExtClock> ClkCfg<Reset, ExtClock> {
             gpioh_blck.pupdr.modify(|_, w| w.pupdr1().pull_up());
 
             // Wait for stabilization. TODO: Use proper delay
-            for _ in 0..10_000 {
+            for _ in 0..15_000 {
                 core::arch::asm!("nop");
             }
         }
-        ClkCfg {
-            _state: Reset,
-            _ext_clock: ExtClockEnabled,
-        }
+        Clk { _state: Reset }
     }
 }

@@ -1,7 +1,7 @@
 #![no_std]
 
 pub mod panic;
-pub mod sys;
+mod sys;
 
 pub use cortex_m_rt::entry;
 #[allow(unused_imports)]
@@ -39,22 +39,21 @@ impl Board {
             unsafe {
                 INITIALIZED = true;
             }
-            Self::inner_init()
+            Self::setup()
         }
     }
 
-    fn inner_init() -> Option<Self> {
+    fn setup() -> Option<Self> {
         log_init!();
+
         #[cfg(debug_assertions)]
         log!("Board init");
 
-        let dp = pac::Peripherals::take().unwrap();
-        let sysclk = sys::Clk::take().unwrap();
-
         // Reset previous configuration and enable external oscillator
-        sysclk.reset().enable_ext_clock();
+        sys::Clk::new().reset().enable_ext_clock();
 
         // Configure power domains and clock tree
+        let dp = pac::Peripherals::take().unwrap();
         let pwr = dp.PWR.constrain();
         let pwrcfg = pwr.vos0(&dp.SYSCFG).freeze();
         let ccdr = dp
@@ -66,6 +65,9 @@ impl Board {
             .hclk(240.MHz())
             .pll1_strategy(rcc::PllConfigStrategy::Iterative)
             .freeze(pwrcfg, &dp.SYSCFG);
+
+        debug_assert_eq!(sys::Clk::get_source(), Some(sys::ClkSource::Pll1));
+        debug_assert_eq!(sys::Clk::get_pll_source(), sys::PllSourceVariant::Hse);
 
         // Configure User LEDs
         let gpiok = dp.GPIOK.split(ccdr.peripheral.GPIOK);
