@@ -1,42 +1,51 @@
-# portenta-rs [WIP]
+# portenta-rs (WIP)
 
 [![ci](https://github.com/gdobato/portenta-rs/actions//workflows/ci.yml/badge.svg)](https://github.com/gdobato/portenta-rs/actions/workflows/ci.yml) 
 
-Sketches for Arduino Portenta-H7 written in Rust, in which some of the available embedded-rust crates are used.
-
-DAP access via **SWD** is required to flash it on the target. It cannot be flashed via Arduino IDE or any other related framework which uses DFU.
-
-Entry point address is located at **0x08040000**, at which arduino bootloader jumps to.
-
-**⚠️  Make sure you do not override the Arduino bootloader since it is needed for some early stage initializations, like the PMIC configuration.
-Overriding Arduino bootloader could lead to a bricked board. Use this project at your own risk.**
-
-### Installation (Unix-like OS)
-Toolchain
+portenta-rs provides examples for the Arduino Portenta-H7 board written in Rust. The entry point address for the application is located at **0x08040000** to which the Arduino bootloader jumps. The software can be flashed on the target either with USB (DFU), or with a debug probe (JLink, ST-Link). Flashing by using Arduino IDE is not supported.
+## Installation (Unix-like OS)
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
 rustup target add thumbv7em-none-eabihf
-```
-[Cargo-embed](https://github.com/probe-rs/cargo-embed)
-```
-cargo install cargo-embed
+cargo install cargo-embed cargo-binutils
 ```
 
-### Build
-
+## Build
+To build an example, run the following command:
 ```
-cargo build [--release] --example <example_name>
+cargo <example_name> [--release]
 ```
-e.g :
+For instance, to build `led_blinky`:
 ```
-cargo build --example led_blinky
+cargo led_blinky
 ```
-### Flash on target
-```
-cargo embed [--release] --example <example_name>
-```
-e.g :
-```
-cargo embed --example led_blinky
-```
+## Flash with DFU (USB)
+1. Install [dfu-utils](https://dfu-util.sourceforge.net/) on your system.
+2. Connect USB to Portenta.
+3. Set the Portenta in bootloader mode by pressing the reset button twice.
+4. Generate the target binary by running the following command:
+   ```
+   cargo <example_name>-bin
+   ```
+   For example, to generate the target binary for `led_blinky`, run the following command:
+   ```
+   cargo led_blinky-bin
+   ```
+4. Flash the binary to the target by running the following command:
+   ```
+   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D <binary_path>
+   ```
+   For example, to flash `led_blinky`, run the following command:
+   ```
+   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D target/thumbv7em-none-eabihf/release/examples/led_blinky.bin
+   ```
+## Flash with debug probe (JLink, ST-Link)
+1. Connect the probe to the JTAG port of the breakout board.
+2. Run the following command:
+   ```
+   cargo  <example_name>-probe [--release]
+   ```
+   For example, to flash `led_blinky`, run the following command:
+   ```
+   cargo led_blinky-probe
+   ```
