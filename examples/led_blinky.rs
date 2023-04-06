@@ -1,4 +1,7 @@
 //! Example LED blinky
+//!
+//! Toggles the user LEDs every second, using a basic not preemptive scheduler
+//!
 
 #![no_std]
 #![no_main]
@@ -50,10 +53,10 @@ fn main() -> ! {
     // Add tasks
     scheduler::add_task!(
         "red_led_blinky",
-        None,
-        Some(red_led_blinky),
-        Some(1_000),
-        Some(3)
+        None,                 // Init runnable
+        Some(red_led_blinky), // Process runnable
+        Some(1_000),          // Cycle period
+        Some(3)               // Offset from startup
     );
 
     scheduler::add_task!(

@@ -1,7 +1,7 @@
 //! Sys
 //!
-//! Clear up previous clock initilization done in bootloader
-//! Enable external oscilator for HSE sourcing (25 MHz)
+//! Clear up previous clock initialization done in bootloader
+//! Enable external oscillator for HSE sourcing (25 MHz)
 //!
 
 #![allow(dead_code)]
