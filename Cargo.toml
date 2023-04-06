@@ -19,7 +19,7 @@ debug = true
 debug-assertions = true
 overflow-checks = true
 lto = false
-panic = 'unwind'
+panic = 'abort'
 incremental = true
 
 [profile.release]
