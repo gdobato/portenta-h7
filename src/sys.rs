@@ -26,91 +26,88 @@ impl Clk<Unreset> {
 
     #[inline(always)]
     pub fn get_source() -> ClkSourceVariant {
-        unsafe { (*pac::RCC::PTR).cfgr.read().sws().variant() }
+        unsafe { (*pac::RCC::ptr()).cfgr.read().sws().variant() }
     }
 
     #[inline(always)]
     pub fn get_pll_source() -> PllSourceVariant {
-        unsafe { (*pac::RCC::PTR).pllckselr.read().pllsrc().variant() }
+        unsafe { (*pac::RCC::ptr()).pllckselr.read().pllsrc().variant() }
     }
 }
 
 impl Clk<Unreset> {
     pub fn reset(self) -> Clk<Reset> {
-        unsafe {
-            let rcc_blck = &(*pac::RCC::PTR);
-            // Enable HSI and load reset values
-            rcc_blck.cr.modify(|_, w| w.hsion().set_bit());
-            rcc_blck.hsicfgr.reset();
-            // Reset clock configuration and wait for clock switch
-            rcc_blck.cfgr.reset();
-            while !rcc_blck.cfgr.read().sws().is_hsi() {}
-            // Reset CSI, HSE, HSI48 and dividers
-            rcc_blck.cr.modify(|_, w| {
-                w.hseon()
-                    .off()
-                    .hsikeron()
-                    .off()
-                    .hsidiv()
-                    .div1()
-                    .hsidivf()
-                    .clear_bit()
-                    .csion()
-                    .off()
-                    .csikeron()
-                    .off()
-                    .hsi48on()
-                    .off()
-                    .hsecsson()
-                    .off()
-                    .hsebyp()
-                    .clear_bit()
-            });
-            while rcc_blck.cr.read().hserdy().bit_is_set() {}
-            // Disable PLL1
-            rcc_blck.cr.modify(|_, w| w.pll1on().clear_bit());
-            while rcc_blck.cr.read().pll1rdy().bit_is_set() {}
-            // Disable PLL2
-            rcc_blck.cr.modify(|_, w| w.pll2on().clear_bit());
-            while rcc_blck.cr.read().pll2rdy().bit_is_set() {}
-            // Disable PLL3
-            rcc_blck.cr.modify(|_, w| w.pll3on().clear_bit());
-            while rcc_blck.cr.read().pll3rdy().bit_is_set() {}
-            // Reset domain configurations
-            rcc_blck.d1cfgr.reset();
-            rcc_blck.d2cfgr.reset();
-            rcc_blck.d3cfgr.reset();
-            // Reset PLLs configurations
-            rcc_blck.pllckselr.reset();
-            rcc_blck.pll1divr.reset();
-            rcc_blck.pll1fracr.reset();
-            rcc_blck.pll2divr.reset();
-            rcc_blck.pll2fracr.reset();
-            rcc_blck.pll3fracr.reset();
-        }
+        let rcc = unsafe { &(*pac::RCC::ptr()) };
+
+        // Enable HSI and load reset values
+        rcc.cr.modify(|_, w| w.hsion().set_bit());
+        rcc.hsicfgr.reset();
+        // Reset clock configuration and wait for clock switch
+        rcc.cfgr.reset();
+        while !rcc.cfgr.read().sws().is_hsi() {}
+        // Reset CSI, HSE, HSI48 and dividers
+        rcc.cr.modify(|_, w| {
+            w.hseon()
+                .off()
+                .hsikeron()
+                .off()
+                .hsidiv()
+                .div1()
+                .hsidivf()
+                .clear_bit()
+                .csion()
+                .off()
+                .csikeron()
+                .off()
+                .hsi48on()
+                .off()
+                .hsecsson()
+                .off()
+                .hsebyp()
+                .clear_bit()
+        });
+        while rcc.cr.read().hserdy().bit_is_set() {}
+        // Disable PLL1
+        rcc.cr.modify(|_, w| w.pll1on().clear_bit());
+        while rcc.cr.read().pll1rdy().bit_is_set() {}
+        // Disable PLL2
+        rcc.cr.modify(|_, w| w.pll2on().clear_bit());
+        while rcc.cr.read().pll2rdy().bit_is_set() {}
+        // Disable PLL3
+        rcc.cr.modify(|_, w| w.pll3on().clear_bit());
+        while rcc.cr.read().pll3rdy().bit_is_set() {}
+        // Reset domain configurations
+        rcc.d1cfgr.reset();
+        rcc.d2cfgr.reset();
+        rcc.d3cfgr.reset();
+        // Reset PLLs configurations
+        rcc.pllckselr.reset();
+        rcc.pll1divr.reset();
+        rcc.pll1fracr.reset();
+        rcc.pll2divr.reset();
+        rcc.pll2fracr.reset();
+        rcc.pll3fracr.reset();
         Clk { _state: Reset }
     }
 }
 
 impl Clk<Reset> {
     pub fn enable_ext_clock(self) -> Clk<Reset> {
-        unsafe {
-            // Enable GPIOH clock
-            let rcc_blck = &(*pac::RCC::PTR);
-            rcc_blck.ahb4enr.modify(|_, w| w.gpiohen().set_bit());
+        let rcc = unsafe { &(*pac::RCC::ptr()) };
+        // Enable GPIOH clock
+        rcc.ahb4enr.modify(|_, w| w.gpiohen().set_bit());
 
-            // Enable oscilator via push pulled GPIOH_1 output
-            let gpioh_blck = &(*pac::GPIOH::PTR);
-            gpioh_blck.bsrr.write(|w| w.bs1().set_bit());
-            gpioh_blck.moder.modify(|_, w| w.moder1().output());
-            gpioh_blck.otyper.modify(|_, w| w.ot1().push_pull());
-            gpioh_blck.ospeedr.modify(|_, w| w.ospeedr1().low_speed());
-            gpioh_blck.pupdr.modify(|_, w| w.pupdr1().pull_up());
+        // Enable oscilator via push pulled GPIOH_1 output
+        let gpioh = unsafe { &(*pac::GPIOH::ptr()) };
+        gpioh.bsrr.write(|w| w.bs1().set_bit());
+        gpioh.moder.modify(|_, w| w.moder1().output());
+        gpioh.otyper.modify(|_, w| w.ot1().push_pull());
+        gpioh.ospeedr.modify(|_, w| w.ospeedr1().low_speed());
+        gpioh.pupdr.modify(|_, w| w.pupdr1().pull_up());
 
-            // Wait for stabilization. TODO: Use proper delay
-            for _ in 0..15_000 {
-                core::arch::asm!("nop");
-            }
+        // Wait for stabilization. TODO: Use proper delay
+        for _ in 0..15_000 {
+            unsafe { core::arch::asm!("nop") };
         }
         Clk { _state: Reset }
     }
