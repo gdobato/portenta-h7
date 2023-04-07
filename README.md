@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/gdobato/portenta-rs/actions//workflows/ci.yml/badge.svg)](https://github.com/gdobato/portenta-rs/actions/workflows/ci.yml) 
 
-portenta-rs provides examples for the Arduino Portenta-H7 board written in Rust. The entry point address for the application is located at **0x08040000** to which the Arduino bootloader jumps. The software can be flashed on the target either with USB (DFU), or with a debug probe (JLink, ST-Link). Flashing by using Arduino IDE is not supported.
+portenta-rs provides examples for the Arduino Portenta-H7 board written in Rust. The entry point address for the application is located at **0x08040000** to which the Arduino bootloader jumps. The software can be flashed on the target either with USB (DFU), or with a debug probe (JLink, ST-Link). Flashing with Arduino IDE is not supported.
 ## Installation (Unix-like OS)
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
