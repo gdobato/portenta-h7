@@ -3,47 +3,37 @@
 pub mod panic;
 mod sys;
 
+use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
-#[allow(unused_imports)]
-pub use rtt_target::rprintln as log;
-
 use hal::{
-    gpio::{self, *},
+    gpio::{gpiok::*, Output, PinState, PushPull},
     pac,
     prelude::*,
     rcc,
 };
+#[allow(unused_imports)]
+pub use rtt_target::rprintln as log;
 use rtt_target::rtt_init_print as log_init;
 use stm32h7xx_hal as hal;
 
-pub type RedUserLed = gpio::gpiok::PK5<Output<PushPull>>;
-pub type GreenUserLed = gpio::gpiok::PK6<Output<PushPull>>;
-pub type BlueUserLed = gpio::gpiok::PK7<Output<PushPull>>;
-
-pub struct UserLeds {
-    pub red: RedUserLed,
-    pub green: GreenUserLed,
-    pub blue: BlueUserLed,
-}
+pub type RedUserLed = PK5<Output<PushPull>>;
+pub type GreenUserLed = PK6<Output<PushPull>>;
+pub type BlueUserLed = PK7<Output<PushPull>>;
 
 pub struct Board {
-    pub user_leds: UserLeds,
+    pub led_red: RedUserLed,
+    pub led_green: GreenUserLed,
+    pub led_blue: BlueUserLed,
 }
 
 impl Board {
-    pub fn init() -> Option<Self> {
-        static mut INITIALIZED: bool = false;
-        if unsafe { INITIALIZED } {
-            None
-        } else {
-            unsafe {
-                INITIALIZED = true;
-            }
-            Self::setup()
-        }
+    pub fn take() -> Self {
+        static TAKEN: AtomicBool = AtomicBool::new(false);
+        debug_assert!(!TAKEN.swap(true, Ordering::SeqCst));
+        Self::setup()
     }
 
-    fn setup() -> Option<Self> {
+    fn setup() -> Self {
         log_init!();
 
         #[cfg(debug_assertions)]
@@ -71,18 +61,16 @@ impl Board {
 
         // Configure User LEDs
         let gpiok = dp.GPIOK.split(ccdr.peripheral.GPIOK);
-        let (red_led, green_led, blue_led) = (
+        let (led_red, led_green, led_blue) = (
             gpiok.pk5.into_push_pull_output_in_state(PinState::High),
             gpiok.pk6.into_push_pull_output_in_state(PinState::High),
             gpiok.pk7.into_push_pull_output_in_state(PinState::High),
         );
 
-        Some(Board {
-            user_leds: UserLeds {
-                red: red_led,
-                green: green_led,
-                blue: blue_led,
-            },
-        })
+        Board {
+            led_red,
+            led_green,
+            led_blue,
+        }
     }
 }

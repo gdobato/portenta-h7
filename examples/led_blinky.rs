@@ -8,69 +8,71 @@
 
 use core::cell::RefCell;
 use non_preemptive_scheduler as scheduler;
-use portenta_rs::{BlueUserLed, GreenUserLed, RedUserLed, UserLeds};
+use portenta_h7::{entry, BlueUserLed, GreenUserLed, RedUserLed};
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 
 // Static and interior mutable entities
-static RED_LED: UnShared<RefCell<Option<RedUserLed>>> = UnShared::new(RefCell::new(None));
-static GREEN_LED: UnShared<RefCell<Option<GreenUserLed>>> = UnShared::new(RefCell::new(None));
-static BLUE_LED: UnShared<RefCell<Option<BlueUserLed>>> = UnShared::new(RefCell::new(None));
+static LED_RED: UnShared<RefCell<Option<RedUserLed>>> = UnShared::new(RefCell::new(None));
+static LED_GREEN: UnShared<RefCell<Option<GreenUserLed>>> = UnShared::new(RefCell::new(None));
+static LED_BLUE: UnShared<RefCell<Option<BlueUserLed>>> = UnShared::new(RefCell::new(None));
 
 // Create scheduler
 #[scheduler::new(task_count = 3, core_freq = 480_000_000)]
 struct NonPreemptiveScheduler;
 
-// Functions which are bound to task runnables
-fn red_led_blinky(_: EventMask) {
-    if let Some(red_led) = RED_LED.borrow().borrow_mut().as_mut() {
-        red_led.toggle();
+// Process runnables
+fn led_red_process(_: EventMask) {
+    if let Some(led_red) = LED_RED.borrow().borrow_mut().as_mut() {
+        led_red.toggle();
     }
 }
 
-fn green_led_blinky(_: EventMask) {
-    if let Some(green_led) = GREEN_LED.borrow().borrow_mut().as_mut() {
-        green_led.toggle();
+fn led_green_process(_: EventMask) {
+    if let Some(led_green) = LED_GREEN.borrow().borrow_mut().as_mut() {
+        led_green.toggle();
     }
 }
 
-fn blue_led_blinky(_: EventMask) {
-    if let Some(blue_led) = BLUE_LED.borrow().borrow_mut().as_mut() {
-        blue_led.toggle();
+fn led_blue_process(_: EventMask) {
+    if let Some(led_blue) = LED_BLUE.borrow().borrow_mut().as_mut() {
+        led_blue.toggle();
     }
 }
 
-#[portenta_rs::entry]
+#[entry]
 fn main() -> ! {
-    let portenta_rs::Board {
-        user_leds: UserLeds { red, green, blue },
+    let portenta_h7::Board {
+        led_red,
+        led_green,
+        led_blue,
         ..
-    } = portenta_rs::Board::init().unwrap();
+    } = portenta_h7::Board::take();
 
-    RED_LED.borrow().replace(Some(red));
-    GREEN_LED.borrow().replace(Some(green));
-    BLUE_LED.borrow().replace(Some(blue));
+    LED_RED.borrow().replace(Some(led_red));
+    LED_GREEN.borrow().replace(Some(led_green));
+    LED_BLUE.borrow().replace(Some(led_blue));
 
     // Add tasks
     scheduler::add_task!(
-        "red_led_blinky",
-        None,                 // Init runnable
-        Some(red_led_blinky), // Process runnable
-        Some(1_000),          // Cycle period
-        Some(3)               // Offset from startup
+        "led_red",
+        None,                  // Init runnable
+        Some(led_red_process), // Process runnable
+        Some(1_000),           // Cycle period
+        Some(3)                // Offset from startup
     );
 
     scheduler::add_task!(
-        "green_led_blinky",
+        "led_green",
         None,
-        Some(green_led_blinky),
+        Some(led_green_process),
         Some(1_000),
         Some(281)
     );
 
     scheduler::add_task!(
-        "blue_led_blinky",
+        "led_blue",
         None,
-        Some(blue_led_blinky),
+        Some(led_blue_process),
         Some(1_000),
         Some(523)
     );
