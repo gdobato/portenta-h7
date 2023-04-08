@@ -1,6 +1,6 @@
 [package]
-name = "portenta-rs"
-version = "0.2.1"
+name = "portenta-h7"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
