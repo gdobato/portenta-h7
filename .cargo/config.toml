@@ -7,6 +7,9 @@ oe = "objcopy --example"
 led_blinky = "be led_blinky"
 led_blinky-probe = "ee led_blinky"
 led_blinky-bin = "oe led_blinky --release -- -O binary target/thumbv7em-none-eabihf/release/examples/led_blinky.bin"
+usb_echo = "be usb_echo"
+usb_echo-probe = "ee usb_echo"
+usb_echo-bin = "oe usb_echo --release -- -O binary target/thumbv7em-none-eabihf/release/examples/usb_echo.bin"
 
 [build]
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)

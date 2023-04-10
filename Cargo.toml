@@ -6,12 +6,14 @@ edition = "2021"
 [dependencies]
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
-stm32h7xx-hal = { version = "0.14.0", features = ["stm32h747cm7","rt"] }
+stm32h7xx-hal = { version = "0.14.0", features = ["stm32h747cm7", "rt", "usb_hs"] }
 rtt-target = { version = "0.3.0", features = ["cortex-m"] }
 
 [dev-dependencies]
 embedded-hal = "0.2"
 non-preemptive-scheduler = { git = "https://github.com/gdobato/non-preemptive-scheduler", tag = "v0.2.3" }
+usb-device = "0.2.9"
+usbd-serial = "0.1.1"
 
 [profile.dev]
 opt-level = 0

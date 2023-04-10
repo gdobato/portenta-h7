@@ -8,7 +8,7 @@
 
 use core::cell::RefCell;
 use non_preemptive_scheduler as scheduler;
-use portenta_h7::{entry, BlueUserLed, GreenUserLed, RedUserLed};
+use portenta_h7::{entry, log_init, BlueUserLed, GreenUserLed, RedUserLed};
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 
 // Static and interior mutable entities
@@ -41,6 +41,8 @@ fn led_blue_process(_: EventMask) {
 
 #[entry]
 fn main() -> ! {
+    log_init!();
+
     let portenta_h7::Board {
         led_red,
         led_green,
