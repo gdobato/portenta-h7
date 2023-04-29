@@ -1,4 +1,4 @@
-//!  Panic
+//! panic
 
 use core::panic::PanicInfo;
 #[cfg(debug_assertions)]

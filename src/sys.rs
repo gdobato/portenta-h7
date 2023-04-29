@@ -1,4 +1,4 @@
-//! Sys
+//! sys
 //!
 //! Clear up previous clock initialization done in bootloader
 //! Enable external oscillator for HSE sourcing (25 MHz)
@@ -33,9 +33,7 @@ impl Clk<Unreset> {
     pub fn get_pll_source() -> PllSourceVariant {
         unsafe { (*pac::RCC::ptr()).pllckselr.read().pllsrc().variant() }
     }
-}
 
-impl Clk<Unreset> {
     pub fn reset(self) -> Clk<Reset> {
         let rcc = unsafe { &(*pac::RCC::ptr()) };
 

@@ -8,13 +8,13 @@
 
 use core::cell::RefCell;
 use non_preemptive_scheduler as scheduler;
-use portenta_h7::{entry, log_init, BlueUserLed, GreenUserLed, RedUserLed};
+use portenta_h7::{entry, log_init, user_led};
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 
 // Static and interior mutable entities
-static LED_RED: UnShared<RefCell<Option<RedUserLed>>> = UnShared::new(RefCell::new(None));
-static LED_GREEN: UnShared<RefCell<Option<GreenUserLed>>> = UnShared::new(RefCell::new(None));
-static LED_BLUE: UnShared<RefCell<Option<BlueUserLed>>> = UnShared::new(RefCell::new(None));
+static LED_RED: UnShared<RefCell<Option<user_led::Red>>> = UnShared::new(RefCell::new(None));
+static LED_GREEN: UnShared<RefCell<Option<user_led::Green>>> = UnShared::new(RefCell::new(None));
+static LED_BLUE: UnShared<RefCell<Option<user_led::Blue>>> = UnShared::new(RefCell::new(None));
 
 // Create scheduler
 #[scheduler::new(task_count = 3, core_freq = 480_000_000)]
