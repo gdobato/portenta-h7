@@ -13,7 +13,9 @@ use non_preemptive_scheduler as scheduler;
 use portenta_h7::{
     entry,
     interrupt::{interrupt, InterruptEnabler},
-    log, log_init, user_led, UsbBus, USB,
+    log, log_init,
+    user_led::{self, UserLed},
+    UsbBus, USB,
 };
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 use usb_device::{class_prelude::*, prelude::*};
@@ -45,14 +47,14 @@ fn led_process(event_mask: EventMask) {
         EVENT_USB_ENUMERATION_COMPLETED => {
             if let Some(led_blue) = LED_BLUE.borrow().borrow_mut().as_mut() {
                 log!("Enumeration completed");
-                led_blue.set_low();
+                led_blue.set_on();
             }
         }
 
         EVENT_USB_ENUMERATION_LOST => {
             if let Some(led_blue) = LED_BLUE.borrow().borrow_mut().as_mut() {
                 log!("Enumeration lost");
-                led_blue.set_high();
+                led_blue.set_off();
             }
         }
         _ => (),
