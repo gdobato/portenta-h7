@@ -10,7 +10,11 @@
 use core::{cell::RefCell, str::from_utf8};
 use cortex_m::singleton;
 use non_preemptive_scheduler as scheduler;
-use portenta_h7::{entry, interrupt, log, log_init, BlueUserLed, InterruptEnabler, UsbBus, USB};
+use portenta_h7::{
+    entry,
+    interrupt::{interrupt, InterruptEnabler},
+    log, log_init, user_led, UsbBus, USB,
+};
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 use usb_device::{class_prelude::*, prelude::*};
 use usbd_serial::SerialPort;
@@ -20,7 +24,7 @@ const EVENT_USB_ENUMERATION_COMPLETED: EventMask = 0x00000001;
 const EVENT_USB_ENUMERATION_LOST: EventMask = 0x00000002;
 
 // Static interior mutable entities
-static LED_BLUE: UnShared<RefCell<Option<BlueUserLed>>> = UnShared::new(RefCell::new(None));
+static LED_BLUE: UnShared<RefCell<Option<user_led::Blue>>> = UnShared::new(RefCell::new(None));
 static USB_SERIAL_PORT: UnShared<RefCell<Option<SerialPort<UsbBus<USB>>>>> =
     UnShared::new(RefCell::new(None));
 static USB_DEV: UnShared<RefCell<Option<UsbDevice<UsbBus<USB>>>>> =

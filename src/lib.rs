@@ -1,59 +1,25 @@
 #![no_std]
 
+pub mod interrupt;
 pub mod panic;
 mod sys;
+pub mod user_led;
 
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
-use hal::{
-    gpio::{gpiok::*, Output, PinState, PushPull},
-    pac,
-    prelude::*,
-    rcc,
-    usb_hs::USB1_ULPI,
-};
-pub use hal::{
-    interrupt,
-    usb_hs::{UsbBus, USB1_ULPI as USB},
-};
-
+pub use hal::usb_hs::{UsbBus, USB1_ULPI as USB};
+use hal::{gpio::PinState, pac, prelude::*, rcc, usb_hs::USB1_ULPI};
 #[allow(unused_imports)]
-pub use rtt_target::rprintln as log;
-pub use rtt_target::rtt_init_print as log_init;
+pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
 use stm32h7xx_hal as hal;
 
 pub type CorePeripherals = cortex_m::Peripherals;
-pub type RedUserLed = PK5<Output<PushPull>>;
-pub type GreenUserLed = PK6<Output<PushPull>>;
-pub type BlueUserLed = PK7<Output<PushPull>>;
-
-pub trait InterruptEnabler {
-    fn enable_interrupt(&self);
-    fn disable_interrupt(&self);
-    fn set_interrupt_priority(&self, cp: &mut CorePeripherals, prio: u8);
-}
-
-impl InterruptEnabler for USB1_ULPI {
-    fn enable_interrupt(&self) {
-        unsafe { cortex_m::peripheral::NVIC::unmask(hal::pac::Interrupt::OTG_HS) };
-    }
-
-    fn disable_interrupt(&self) {
-        cortex_m::peripheral::NVIC::mask(hal::pac::Interrupt::OTG_HS);
-    }
-
-    fn set_interrupt_priority(&self, cp: &mut CorePeripherals, prio: u8) {
-        unsafe {
-            cp.NVIC.set_priority(hal::pac::Interrupt::OTG_HS, prio);
-        }
-    }
-}
 
 pub struct Board {
     pub cp: CorePeripherals,
-    pub led_red: RedUserLed,
-    pub led_green: GreenUserLed,
-    pub led_blue: BlueUserLed,
+    pub led_red: user_led::Red,
+    pub led_green: user_led::Green,
+    pub led_blue: user_led::Blue,
     pub usb: USB1_ULPI,
 }
 
