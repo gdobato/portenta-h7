@@ -19,7 +19,7 @@ use portenta_h7::{
 };
 use scheduler::{resources::UnShared, EventMask, Scheduler, Task};
 use usb_device::{class_prelude::*, prelude::*};
-use usbd_serial::SerialPort;
+use usbd_serial::CdcAcmClass;
 
 // Events
 const EVENT_USB_ENUMERATION_COMPLETED: EventMask = 0x00000001;
@@ -27,15 +27,15 @@ const EVENT_USB_ENUMERATION_LOST: EventMask = 0x00000002;
 
 // Static interior mutable entities
 static LED_BLUE: UnShared<RefCell<Option<user_led::Blue>>> = UnShared::new(RefCell::new(None));
-static USB_SERIAL_PORT: UnShared<RefCell<Option<SerialPort<UsbBus<USB>>>>> =
+static USB_SERIAL_PORT: UnShared<RefCell<Option<CdcAcmClass<UsbBus<USB>>>>> =
     UnShared::new(RefCell::new(None));
 static USB_DEV: UnShared<RefCell<Option<UsbDevice<UsbBus<USB>>>>> =
     UnShared::new(RefCell::new(None));
 // Static mutable entities
 const USB_BUS_BUFFER_SIZE: usize = 1024;
 static mut USB_BUS_BUFFER: [u32; USB_BUS_BUFFER_SIZE] = [0u32; USB_BUS_BUFFER_SIZE];
-const USB_APP_BUFFER_SIZE: usize = 64;
-static mut USB_APP_BUFFER: [u8; USB_APP_BUFFER_SIZE] = [0u8; USB_APP_BUFFER_SIZE];
+const USB_HS_MAX_PACKET_SIZE: usize = 512;
+static mut USB_APP_BUFFER: [u8; USB_HS_MAX_PACKET_SIZE] = [0u8; USB_HS_MAX_PACKET_SIZE];
 
 // Create scheduler
 #[scheduler::new(task_count = 2, core_freq = 480_000_000)]
@@ -81,7 +81,10 @@ fn main() -> ! {
     .unwrap();
     USB_SERIAL_PORT
         .borrow()
-        .replace(Some(usbd_serial::SerialPort::new(usb_bus)));
+        .replace(Some(usbd_serial::CdcAcmClass::new(
+            usb_bus,
+            USB_HS_MAX_PACKET_SIZE as u16,
+        )));
     USB_DEV.borrow().replace(Some(
         UsbDeviceBuilder::new(usb_bus, UsbVidPid(0x1234, 0xABCD))
             .manufacturer("example")
@@ -115,7 +118,7 @@ fn OTG_HS() {
         let previous_state = usb_dev.state();
         if usb_dev.poll(&mut [usb_serial_port]) {
             // Read from reception fifo.
-            match usb_serial_port.read(unsafe { &mut USB_APP_BUFFER[..] }) {
+            match usb_serial_port.read_packet(unsafe { &mut USB_APP_BUFFER[..] }) {
                 Ok(cnt) if cnt > 0 => {
                     #[cfg(debug_assertions)]
                     log!(
@@ -124,7 +127,7 @@ fn OTG_HS() {
                         from_utf8(unsafe { &USB_APP_BUFFER[..cnt] }).unwrap_or("not valid")
                     );
                     // Send back received data
-                    match usb_serial_port.write(unsafe { &USB_APP_BUFFER[..cnt] }) {
+                    match usb_serial_port.write_packet(unsafe { &USB_APP_BUFFER[..cnt] }) {
                         Ok(_) => (),
                         Err(err) => {
                             log!("Error in transmission: {:?}", err)
