@@ -1,4 +1,4 @@
-# portenta-h7 (WIP)
+# portenta-h7
 
 [![ci](https://github.com/gdobato/portenta-h7/actions//workflows/ci.yml/badge.svg)](https://github.com/gdobato/portenta-h7/actions/workflows/ci.yml) 
 
@@ -15,9 +15,9 @@ To build an example, run the following command:
 ```
 cargo <example_name> [--release]
 ```
-For instance, to build `led_blinky`:
+For instance, to build `blinky`:
 ```
-cargo led_blinky
+cargo blinky
 ```
 ## Flash with DFU (USB)
 1. Install [dfu-utils](https://dfu-util.sourceforge.net/) on your system.
@@ -27,17 +27,17 @@ cargo led_blinky
    ```
    cargo <example_name>-bin
    ```
-   For example, to generate the target binary for `led_blinky`, run the following command:
+   For example, to generate the target binary for `blinky`, run the following command:
    ```
-   cargo led_blinky-bin
+   cargo blinky-bin
    ```
 4. Flash the binary to the target by running the following command:
    ```
    dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D <binary_path>
    ```
-   For example, to flash `led_blinky`, run the following command:
+   For example, to flash `blinky`, run the following command:
    ```
-   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D target/thumbv7em-none-eabihf/release/examples/led_blinky.bin
+   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D target/thumbv7em-none-eabihf/release/examples/blinky.bin
    ```
 ## Flash with debug probe (JLink, ST-Link)
 1. Connect the probe to the JTAG port of the breakout board.
@@ -45,7 +45,7 @@ cargo led_blinky
    ```
    cargo  <example_name>-probe [--release]
    ```
-   For example, to flash `led_blinky`, run the following command:
+   For example, to flash `blinky`, run the following command:
    ```
-   cargo led_blinky-probe
+   cargo blinky-probe
    ```

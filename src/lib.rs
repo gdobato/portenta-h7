@@ -8,15 +8,16 @@ pub mod user_led;
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use cortex_m_rt::entry;
 pub use hal::usb_hs::{UsbBus, USB1_ULPI as USB};
-use hal::{gpio::PinState, pac, prelude::*, rcc, usb_hs::USB1_ULPI};
+use hal::{gpio::PinState, pac, prelude::*, rcc, time::Hertz, usb_hs::USB1_ULPI};
 #[allow(unused_imports)]
 pub use rtt_target::{rprintln as log, rtt_init_print as log_init};
-use stm32h7xx_hal as hal;
+pub use stm32h7xx_hal as hal;
 
 pub type CorePeripherals = cortex_m::Peripherals;
 
+pub const CORE_FREQUENCY: Hertz = Hertz::from_raw(480_000_000);
+
 pub struct Board {
-    pub cp: CorePeripherals,
     pub led_red: user_led::Red,
     pub led_green: user_led::Green,
     pub led_blue: user_led::Blue,
@@ -36,7 +37,6 @@ impl Board {
 
         // Reset previous configuration and enable external oscillator as HSE source (25 MHz)
         sys::Clk::new().reset().enable_ext_clock();
-        let cp = cortex_m::Peripherals::take().unwrap();
         let dp = pac::Peripherals::take().unwrap();
 
         // Configure power domains and clock tree
@@ -46,7 +46,7 @@ impl Board {
             .constrain()
             .use_hse(25.MHz())
             .bypass_hse()
-            .sys_ck(480.MHz())
+            .sys_ck(CORE_FREQUENCY)
             .hclk(240.MHz())
             .pll1_strategy(rcc::PllConfigStrategy::Iterative)
             .freeze(pwrcfg, &dp.SYSCFG);
@@ -98,7 +98,6 @@ impl Board {
         );
 
         Board {
-            cp,
             led_red,
             led_green,
             led_blue,
