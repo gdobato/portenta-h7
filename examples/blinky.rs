@@ -44,9 +44,9 @@ mod app {
 
         #[cfg(debug_assertions)]
         log!("spawning tasks");
-        blink_led_red::spawn_after(MillisDurationU64::from_ticks(0)).unwrap();
-        blink_led_green::spawn_after(MillisDurationU64::from_ticks(0)).unwrap();
-        blink_led_blue::spawn_after(MillisDurationU64::from_ticks(0)).unwrap();
+        let _ = blink_led_red::spawn();
+        let _ = blink_led_green::spawn();
+        let _ = blink_led_blue::spawn();
 
         (
             Shared {},

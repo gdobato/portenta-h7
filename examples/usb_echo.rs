@@ -79,7 +79,8 @@ mod app {
     fn usb_process(cx: usb_process::Context) {
         let (usb_dev, usb_serial_port) = (cx.local.usb_dev, cx.local.usb_serial_port);
         let previous_state = usb_dev.state();
-        // Trigger internal state machine. It should be call either from ISR on USB event,
+
+        // Trigger internal state machine. It should be called either from ISR on USB event,
         // or every 10 ms from normal execution context
         if usb_dev.poll(&mut [usb_serial_port]) {
             // Read from reception fifo
