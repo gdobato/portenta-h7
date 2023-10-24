@@ -7,7 +7,10 @@
 #![no_main]
 
 #[allow(unused_imports)]
-use portenta_h7::{log, log_init, user_led};
+use portenta_h7::{
+    board::{self, Board},
+    led, log, log_init,
+};
 use rtic::app;
 use systick_monotonic::{fugit::MillisDurationU64, Systick};
 
@@ -20,9 +23,9 @@ mod app {
 
     #[local]
     struct Local {
-        led_red: user_led::Red,
-        led_green: user_led::Green,
-        led_blue: user_led::Blue,
+        led_red: led::user::Red,
+        led_green: led::user::Green,
+        led_blue: led::user::Blue,
     }
 
     #[monotonic(binds = SysTick, default = true)]
@@ -32,15 +35,15 @@ mod app {
     fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
         log_init!();
 
-        let mono = Systick::new(cx.core.SYST, portenta_h7::CORE_FREQUENCY.raw());
+        let mono = Systick::new(cx.core.SYST, board::CORE_FREQUENCY.raw());
 
-        // Get boatd resources
-        let portenta_h7::Board {
+        // Get board resources
+        let Board {
             led_red,
             led_green,
             led_blue,
             ..
-        } = portenta_h7::Board::take();
+        } = Board::take();
 
         #[cfg(debug_assertions)]
         log!("spawning tasks");
