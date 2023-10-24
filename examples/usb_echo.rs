@@ -8,9 +8,9 @@
 
 use cortex_m::singleton;
 use portenta_h7::{
+    board::{self, Board, UsbBus, USB},
+    led::{self, Led},
     log, log_init,
-    user_led::{self, UserLed},
-    UsbBus, USB,
 };
 use rtic::app;
 use systick_monotonic::Systick;
@@ -31,7 +31,7 @@ mod app {
 
     #[local]
     struct Local {
-        led_blue: user_led::Blue,
+        led_blue: led::user::Blue,
         usb_dev: UsbDevice<'static, UsbBus<USB>>,
         usb_serial_port: CdcAcmClass<'static, UsbBus<USB>>,
     }
@@ -43,10 +43,10 @@ mod app {
     fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
         log_init!();
 
-        let mono = Systick::new(cx.core.SYST, portenta_h7::CORE_FREQUENCY.raw());
+        let mono = Systick::new(cx.core.SYST, board::CORE_FREQUENCY.raw());
 
         // Get board resources
-        let portenta_h7::Board { led_blue, usb, .. } = portenta_h7::Board::take();
+        let Board { led_blue, usb, .. } = Board::take();
 
         // Init USB stack
         let usb_bus = singleton!(
@@ -110,14 +110,14 @@ mod app {
             // Transition to enumeration
             UsbDeviceState::Configured if previous_state == UsbDeviceState::Addressed => {
                 log!("Enumeration completed");
-                cx.local.led_blue.set_on();
+                cx.local.led_blue.on();
             }
             // Already enumerated
             UsbDeviceState::Configured => {}
             // Enumeration lost
             _ if previous_state == UsbDeviceState::Configured => {
                 log!("Enumeration lost");
-                cx.local.led_blue.set_off();
+                cx.local.led_blue.off();
             }
             _ => (),
         }

@@ -2,7 +2,8 @@
 
 pub use crate::hal::pac::interrupt;
 use crate::hal::{self, usb_hs::USB1_ULPI};
-use crate::CorePeripherals;
+
+type CorePeripherals = cortex_m::Peripherals;
 
 pub trait InterruptEnabler {
     fn enable_interrupt(&self);
