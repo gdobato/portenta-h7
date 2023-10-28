@@ -1,12 +1,12 @@
 [package]
 name = "portenta-h7"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 
 [dependencies]
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
-stm32h7xx-hal = { version = "0.14.0", features = ["stm32h747cm7", "rt", "usb_hs"] }
+stm32h7xx-hal = { version = "0.15.0", features = ["stm32h747cm7", "rt", "usb_hs"] }
 rtt-target = { version = "0.4.0"}
 
 [dev-dependencies]
