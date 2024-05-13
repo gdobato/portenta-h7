@@ -12,7 +12,7 @@ use portenta_h7::{
     led, log, log_init,
 };
 use rtic::app;
-use systick_monotonic::{fugit::MillisDurationU64, Systick};
+use rtic_monotonics::systick::*;
 
 #[app(device = portenta_h7::hal::pac, peripherals = false, dispatchers = [SPI1])]
 mod app {
@@ -28,14 +28,16 @@ mod app {
         led_blue: led::user::Blue,
     }
 
-    #[monotonic(binds = SysTick, default = true)]
-    type MonoTimer = Systick<1_000>;
-
     #[init]
-    fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
+    fn init(cx: init::Context) -> (Shared, Local) {
         log_init!();
 
-        let mono = Systick::new(cx.core.SYST, board::CORE_FREQUENCY.raw());
+        let systick_mono_token = rtic_monotonics::create_systick_token!();
+        Systick::start(
+            cx.core.SYST,
+            board::CORE_FREQUENCY.raw(),
+            systick_mono_token,
+        );
 
         // Get board resources
         let Board {
@@ -58,31 +60,36 @@ mod app {
                 led_green,
                 led_blue,
             },
-            init::Monotonics(mono),
         )
     }
 
     #[task(local = [led_red])]
-    fn blink_led_red(cx: blink_led_red::Context) {
-        #[cfg(debug_assertions)]
-        log!("toggling {:?}", cx.local.led_red);
-        cx.local.led_red.toggle();
-        blink_led_red::spawn_after(MillisDurationU64::from_ticks(500)).unwrap();
+    async fn blink_led_red(cx: blink_led_red::Context) {
+        loop {
+            #[cfg(debug_assertions)]
+            log!("toggling {:?}", cx.local.led_red);
+            cx.local.led_red.toggle();
+            Systick::delay(500.millis()).await;
+        }
     }
 
     #[task(local = [led_green])]
-    fn blink_led_green(cx: blink_led_green::Context) {
-        #[cfg(debug_assertions)]
-        log!("toggling {:?}", cx.local.led_green);
-        cx.local.led_green.toggle();
-        blink_led_green::spawn_after(MillisDurationU64::from_ticks(1_000)).unwrap();
+    async fn blink_led_green(cx: blink_led_green::Context) {
+        loop {
+            #[cfg(debug_assertions)]
+            log!("toggling {:?}", cx.local.led_green);
+            cx.local.led_green.toggle();
+            Systick::delay(1000.millis()).await;
+        }
     }
 
     #[task(local = [led_blue])]
-    fn blink_led_blue(cx: blink_led_blue::Context) {
-        #[cfg(debug_assertions)]
-        log!("toggling {:?}", cx.local.led_blue);
-        cx.local.led_blue.toggle();
-        blink_led_blue::spawn_after(MillisDurationU64::from_ticks(2_000)).unwrap();
+    async fn blink_led_blue(cx: blink_led_blue::Context) {
+        loop {
+            #[cfg(debug_assertions)]
+            log!("toggling {:?}", cx.local.led_blue);
+            cx.local.led_blue.toggle();
+            Systick::delay(1000.millis()).await;
+        }
     }
 }
