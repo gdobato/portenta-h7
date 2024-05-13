@@ -13,7 +13,7 @@ use portenta_h7::{
     log, log_init,
 };
 use rtic::app;
-use systick_monotonic::Systick;
+use rtic_monotonics::systick::*;
 use usb_device::prelude::*;
 use usbd_serial::CdcAcmClass;
 
@@ -36,14 +36,16 @@ mod app {
         usb_serial_port: CdcAcmClass<'static, UsbBus<USB>>,
     }
 
-    #[monotonic(binds = SysTick, default = true)]
-    type MonoTimer = Systick<1_000>;
-
     #[init]
-    fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
+    fn init(cx: init::Context) -> (Shared, Local) {
         log_init!();
 
-        let mono = Systick::new(cx.core.SYST, board::CORE_FREQUENCY.raw());
+        let systick_mono_token = rtic_monotonics::create_systick_token!();
+        Systick::start(
+            cx.core.SYST,
+            board::CORE_FREQUENCY.raw(),
+            systick_mono_token,
+        );
 
         // Get board resources
         let Board { led_blue, usb, .. } = Board::take();
@@ -54,14 +56,17 @@ mod app {
                 UsbBus::new(usb, unsafe { &mut USB_BUS_BUFFER })
         )
         .unwrap();
+
         let usb_serial_port = usbd_serial::CdcAcmClass::new(usb_bus, USB_HS_MAX_PACKET_SIZE as u16);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(0x1234, 0xABCD))
-            .manufacturer("example")
-            .product("usb-echo")
-            .serial_number("0123456789ABCDEF")
             .device_class(usbd_serial::USB_CLASS_CDC)
             .max_packet_size_0(64)
-            .max_power(100)
+            .unwrap()
+            .strings(&[StringDescriptors::default()
+                .manufacturer("example")
+                .product("usb-echo")
+                .serial_number("0123456789ABCDEF")])
+            .unwrap()
             .build();
 
         (
@@ -71,7 +76,6 @@ mod app {
                 usb_dev,
                 usb_serial_port,
             },
-            init::Monotonics(mono),
         )
     }
 

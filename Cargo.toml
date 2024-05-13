@@ -4,16 +4,21 @@ version = "0.4.0"
 edition = "2021"
 
 [dependencies]
-cortex-m = "0.7"
+cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
-stm32h7xx-hal = { version = "0.15.0", features = ["stm32h747cm7", "rt", "usb_hs"] }
-rtt-target = { version = "0.4.0"}
+stm32h7xx-hal = { version = "0.16.0", features = [
+    "stm32h747cm7",
+    "rt",
+    "usb_hs",
+] }
+rtt-target = { version = "0.4.0" }
 
 [dev-dependencies]
-cortex-m-rtic = "1.1.4"
-systick-monotonic = "1.0.1"
-usb-device = "0.2.9"
-usbd-serial = "0.1.1"
+rtic = { version = "2.1.1", features = ["thumbv7-backend"] }
+rtic-monotonics = { version = "1.5.0", features = ["cortex-m-systick"] }
+usb-device = "0.3.2"
+usbd-serial = "0.2.2"
+
 
 [profile.dev]
 opt-level = 0

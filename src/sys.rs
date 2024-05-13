@@ -103,10 +103,10 @@ impl Clk<Reset> {
         gpioh.ospeedr.modify(|_, w| w.ospeedr1().low_speed());
         gpioh.pupdr.modify(|_, w| w.pupdr1().pull_up());
 
-        // Wait for stabilization. TODO: Use proper delay
-        for _ in 0..15_000 {
-            unsafe { core::arch::asm!("nop") };
-        }
+        // Wait for stabilization
+        const CYCLES_TO_WAIT: u32 = 15_000;
+        cortex_m::asm::delay(CYCLES_TO_WAIT);
+
         Clk { _state: Reset }
     }
 }
