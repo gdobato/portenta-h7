@@ -6,9 +6,6 @@
 #![no_std]
 #![no_main]
 
-use core::mem::MaybeUninit;
-
-use cortex_m::singleton;
 use portenta_h7::{
     board::{self, Board, UsbBus, USB},
     led::{self, Led},
@@ -16,17 +13,19 @@ use portenta_h7::{
 };
 use rtic::app;
 use rtic_monotonics::systick::*;
-use usb_device::prelude::*;
+use static_cell::StaticCell;
+use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::CdcAcmClass;
-
-const USB_HS_MAX_PACKET_SIZE: usize = 64;
 
 #[app(device = portenta_h7::hal::pac, peripherals = false)]
 mod app {
     use super::*;
 
+    // USB buffers
+    const APP_BUFF_SIZE: usize = 64;
     const USB_BUS_BUFFER_SIZE: usize = 1024;
-    static mut USB_BUS_BUFFER: MaybeUninit<[u32; USB_BUS_BUFFER_SIZE]> = MaybeUninit::uninit();
+    static USB_BUS_BUFFER: StaticCell<[u32; USB_BUS_BUFFER_SIZE]> = StaticCell::new();
+    static USB_ALLOCATOR: StaticCell<UsbBusAllocator<UsbBus<USB>>> = StaticCell::new();
 
     #[shared]
     struct Shared {}
@@ -44,15 +43,6 @@ mod app {
 
         let systick_mono_token = rtic_monotonics::create_systick_token!();
 
-        // Init usb buffer
-        unsafe {
-            let usb_buffer: &mut [MaybeUninit<u32>; USB_BUS_BUFFER_SIZE] =
-                &mut *(core::ptr::addr_of_mut!(USB_BUS_BUFFER) as *mut _);
-            for element in usb_buffer.iter_mut() {
-                element.as_mut_ptr().write(0);
-            }
-        }
-
         Systick::start(
             cx.core.SYST,
             board::CORE_FREQUENCY.raw(),
@@ -62,9 +52,12 @@ mod app {
         // Get board resources
         let Board { led_blue, usb, .. } = Board::take();
 
-        let usb_bus = singleton!(:usb_device::class_prelude::UsbBusAllocator<UsbBus<USB>> = UsbBus::new(usb, unsafe {USB_BUS_BUFFER.assume_init_mut()})).unwrap();
-
-        let usb_serial_port = usbd_serial::CdcAcmClass::new(usb_bus, USB_HS_MAX_PACKET_SIZE as u16);
+        // Init USB stack
+        let usb_bus = USB_ALLOCATOR.init(UsbBus::new(
+            usb,
+            USB_BUS_BUFFER.init([0; USB_BUS_BUFFER_SIZE]),
+        ));
+        let usb_serial_port = usbd_serial::CdcAcmClass::new(usb_bus, APP_BUFF_SIZE as u16);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(0x1234, 0xABCD))
             .device_class(usbd_serial::USB_CLASS_CDC)
             .max_packet_size_0(64)
@@ -94,7 +87,7 @@ mod app {
         // Trigger internal state machine. It should be called either from ISR on USB event,
         // or every 10 ms from normal execution context
         if usb_dev.poll(&mut [usb_serial_port]) {
-            let mut app_buff = [0u8; USB_HS_MAX_PACKET_SIZE];
+            let mut app_buff = [0u8; APP_BUFF_SIZE];
 
             // Read from reception fifo
             match usb_serial_port.read_packet(&mut app_buff) {
