@@ -6,10 +6,10 @@
 #![no_std]
 #![no_main]
 
-#[allow(unused_imports)]
+use defmt::info;
 use portenta_h7::{
     board::{self, Board},
-    led, log, log_init,
+    led,
 };
 use rtic::app;
 use rtic_monotonics::systick::*;
@@ -30,8 +30,7 @@ mod app {
 
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
-        log_init!();
-
+        info!("Init");
         let systick_mono_token = rtic_monotonics::create_systick_token!();
         Systick::start(
             cx.core.SYST,
@@ -48,7 +47,7 @@ mod app {
         } = Board::take();
 
         #[cfg(debug_assertions)]
-        log!("spawning tasks");
+        info!("spawning tasks");
         let _ = blink_led_red::spawn();
         let _ = blink_led_green::spawn();
         let _ = blink_led_blue::spawn();
@@ -66,8 +65,6 @@ mod app {
     #[task(local = [led_red])]
     async fn blink_led_red(cx: blink_led_red::Context) {
         loop {
-            #[cfg(debug_assertions)]
-            log!("toggling {:?}", cx.local.led_red);
             cx.local.led_red.toggle();
             Systick::delay(500.millis()).await;
         }
@@ -76,8 +73,6 @@ mod app {
     #[task(local = [led_green])]
     async fn blink_led_green(cx: blink_led_green::Context) {
         loop {
-            #[cfg(debug_assertions)]
-            log!("toggling {:?}", cx.local.led_green);
             cx.local.led_green.toggle();
             Systick::delay(1000.millis()).await;
         }
@@ -86,8 +81,6 @@ mod app {
     #[task(local = [led_blue])]
     async fn blink_led_blue(cx: blink_led_blue::Context) {
         loop {
-            #[cfg(debug_assertions)]
-            log!("toggling {:?}", cx.local.led_blue);
             cx.local.led_blue.toggle();
             Systick::delay(1000.millis()).await;
         }

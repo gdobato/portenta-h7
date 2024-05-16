@@ -1,7 +1,5 @@
 //! board
 
-#[allow(unused)]
-use crate::log;
 use crate::{hal, led, sys};
 use core::sync::atomic::{AtomicBool, Ordering};
 pub use hal::usb_hs::{UsbBus, USB1_ULPI as USB};
@@ -24,9 +22,6 @@ impl Board {
     }
 
     fn setup() -> Self {
-        #[cfg(debug_assertions)]
-        log!("Board init");
-
         // Reset previous configuration and enable external oscillator as HSE source (25 MHz)
         sys::Clk::new().reset().enable_ext_clock();
         let dp = pac::Peripherals::take().unwrap();

@@ -15,6 +15,13 @@ usb_echo-bin = "oe usb_echo --release -- -O binary target/thumbv7em-none-eabihf/
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 rustflags = [
-  # Use LLD as the default linker
-  "-C", "link-arg=-Tlink.x",
+  "-C",
+  "link-arg=-Tlink.x",
+  "-C",
+  "link-arg=--nmagic",
+  "-C",
+  "link-arg=-Tdefmt.x",
 ]
+
+[env]
+DEFMT_LOG = "debug"
