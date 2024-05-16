@@ -11,7 +11,9 @@ stm32h7xx-hal = { version = "0.16.0", features = [
     "rt",
     "usb_hs",
 ] }
-rtt-target = { version = "0.4.0" }
+defmt = "=0.3.7"
+defmt-rtt = "0.4.1"
+panic-probe = { version = "0.3", features = ["print-defmt"] }
 
 [dev-dependencies]
 rtic = { version = "2.1.1", features = ["thumbv7-backend"] }

@@ -6,10 +6,10 @@
 #![no_std]
 #![no_main]
 
+use defmt::{error, info};
 use portenta_h7::{
     board::{self, Board, UsbBus, USB},
     led::{self, Led},
-    log, log_init,
 };
 use rtic::app;
 use rtic_monotonics::systick::*;
@@ -39,7 +39,7 @@ mod app {
 
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
-        log_init!();
+        info!("Init");
 
         let systick_mono_token = rtic_monotonics::create_systick_token!();
 
@@ -92,8 +92,7 @@ mod app {
             // Read from reception fifo
             match usb_serial_port.read_packet(&mut app_buff) {
                 Ok(cnt) if cnt > 0 => {
-                    #[cfg(debug_assertions)]
-                    log!(
+                    info!(
                         "Received {} bytes: {}",
                         cnt,
                         core::str::from_utf8(&app_buff[..cnt]).unwrap_or("not valid")
@@ -102,7 +101,7 @@ mod app {
                     match usb_serial_port.write_packet(&app_buff[..cnt]) {
                         Ok(_) => (),
                         Err(err) => {
-                            log!("Error in transmission: {:?}", err)
+                            error!("Error in transmission: {:?}", err as u8)
                         }
                     }
                 }
@@ -114,14 +113,14 @@ mod app {
         match usb_dev.state() {
             // Transition to enumeration
             UsbDeviceState::Configured if previous_state == UsbDeviceState::Addressed => {
-                log!("Enumeration completed");
+                info!("Enumeration completed");
                 cx.local.led_blue.on();
             }
             // Already enumerated
             UsbDeviceState::Configured => {}
             // Enumeration lost
             _ if previous_state == UsbDeviceState::Configured => {
-                log!("Enumeration lost");
+                info!("Enumeration lost");
                 cx.local.led_blue.off();
             }
             _ => (),
