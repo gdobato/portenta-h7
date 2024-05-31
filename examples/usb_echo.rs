@@ -7,10 +7,7 @@
 #![no_main]
 
 use defmt::{error, info};
-use portenta_h7::{
-    board::{self, Board, UsbBus, USB},
-    led::{self, Led},
-};
+use portenta_h7::board::{self, Board, LedBlue, UsbBusImpl};
 use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 use static_cell::StaticCell;
@@ -27,16 +24,16 @@ mod app {
     const APP_BUFF_SIZE: usize = 64;
     const USB_BUS_BUFFER_SIZE: usize = 1024;
     static USB_BUS_BUFFER: StaticCell<[u32; USB_BUS_BUFFER_SIZE]> = StaticCell::new();
-    static USB_ALLOCATOR: StaticCell<UsbBusAllocator<UsbBus<USB>>> = StaticCell::new();
+    static USB_ALLOCATOR: StaticCell<UsbBusAllocator<UsbBusImpl>> = StaticCell::new();
 
     #[shared]
     struct Shared {}
 
     #[local]
     struct Local {
-        led_blue: led::user::Blue,
-        usb_dev: UsbDevice<'static, UsbBus<USB>>,
-        usb_serial_port: CdcAcmClass<'static, UsbBus<USB>>,
+        led_blue: LedBlue,
+        usb_dev: UsbDevice<'static, UsbBusImpl>,
+        usb_serial_port: CdcAcmClass<'static, UsbBusImpl>,
     }
 
     #[init]
@@ -49,7 +46,7 @@ mod app {
         let Board { led_blue, usb, .. } = Board::take();
 
         // Init USB stack
-        let usb_bus = USB_ALLOCATOR.init(UsbBus::new(
+        let usb_bus = USB_ALLOCATOR.init(UsbBusImpl::new(
             usb,
             USB_BUS_BUFFER.init([0; USB_BUS_BUFFER_SIZE]),
         ));

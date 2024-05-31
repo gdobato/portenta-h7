@@ -7,10 +7,7 @@
 #![no_main]
 
 use defmt::info;
-use portenta_h7::{
-    board::{self, Board},
-    led,
-};
+use portenta_h7::board::{self, Board, LedBlue, LedGreen, LedRed};
 use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 
@@ -25,9 +22,9 @@ mod app {
 
     #[local]
     struct Local {
-        led_red: led::user::Red,
-        led_green: led::user::Green,
-        led_blue: led::user::Blue,
+        led_red: LedRed,
+        led_green: LedGreen,
+        led_blue: LedBlue,
     }
 
     #[init]

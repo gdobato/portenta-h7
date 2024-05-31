@@ -1,17 +1,33 @@
 //! board
 
-use crate::{hal, led, sys};
+use crate::{
+    drivers::{led, pmic},
+    hal, sys,
+};
 use core::sync::atomic::{AtomicBool, Ordering};
-pub use hal::usb_hs::{UsbBus, USB1_ULPI as USB};
-use hal::{gpio::PinState, pac, prelude::*, rcc, time::Hertz, usb_hs::USB1_ULPI};
+use defmt::debug;
+use hal::{
+    gpio::{Output, Pin, PinState, PushPull},
+    pac,
+    prelude::*,
+    rcc,
+    time::Hertz,
+    usb_hs::{UsbBus, USB1_ULPI},
+};
 
+type DigitalOutputPin<const P: char, const N: u8> = Pin<P, N, Output<PushPull>>;
+pub type LedRed = led::Led<DigitalOutputPin<'K', 5>>;
+pub type LedGreen = led::Led<DigitalOutputPin<'K', 6>>;
+pub type LedBlue = led::Led<DigitalOutputPin<'K', 7>>;
+pub type UsbPer = USB1_ULPI;
+pub type UsbBusImpl = UsbBus<UsbPer>;
 pub const CORE_FREQUENCY: Hertz = Hertz::from_raw(480_000_000);
 
 pub struct Board {
-    pub led_red: led::user::Red,
-    pub led_green: led::user::Green,
-    pub led_blue: led::user::Blue,
-    pub usb: USB1_ULPI,
+    pub led_red: LedRed,
+    pub led_green: LedGreen,
+    pub led_blue: LedBlue,
+    pub usb: UsbPer,
 }
 
 impl Board {
@@ -41,7 +57,7 @@ impl Board {
         debug_assert_eq!(sys::Clk::get_source(), Some(sys::ClkSource::Pll1));
         debug_assert_eq!(sys::Clk::get_pll_source(), sys::PllSourceVariant::Hse);
 
-        // USB
+        // GPIOs
         let (gpioa, gpiob, gpioc, gpioh, gpioi, gpioj) = {
             (
                 dp.GPIOA.split(ccdr.peripheral.GPIOA),
@@ -78,11 +94,32 @@ impl Board {
 
         // User LEDs
         let gpiok = dp.GPIOK.split(ccdr.peripheral.GPIOK);
-        let (led_red, led_green, led_blue) = (
+        let (output_k5, output_k6, output_k7) = (
             gpiok.pk5.into_push_pull_output_in_state(PinState::High),
             gpiok.pk6.into_push_pull_output_in_state(PinState::High),
             gpiok.pk7.into_push_pull_output_in_state(PinState::High),
         );
+
+        let led_red = led::Led::new(output_k5);
+        let led_green = led::Led::new(output_k6);
+        let led_blue = led::Led::new(output_k7);
+
+        // PMIC
+        let (i2c1_scl, i2c1_sda) = (
+            gpiob.pb6.into_alternate_open_drain(),
+            gpiob.pb7.into_alternate_open_drain(),
+        );
+        let i2c1 = dp.I2C1.i2c(
+            (i2c1_scl, i2c1_sda),
+            400.kHz(),
+            ccdr.peripheral.I2C1,
+            &ccdr.clocks,
+        );
+        let mut pmic = pmic::Pmic::new(i2c1);
+        match pmic.device_id() {
+            Ok(id) => debug!("PMIC device ID: {:X}", id),
+            Err(_) => debug!("PMIC device ID read error"),
+        }
 
         Board {
             led_red,
