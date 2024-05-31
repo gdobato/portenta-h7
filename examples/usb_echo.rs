@@ -12,10 +12,12 @@ use portenta_h7::{
     led::{self, Led},
 };
 use rtic::app;
-use rtic_monotonics::systick::*;
+use rtic_monotonics::systick::prelude::*;
 use static_cell::StaticCell;
 use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
 use usbd_serial::CdcAcmClass;
+
+systick_monotonic!(Mono, 1000);
 
 #[app(device = portenta_h7::hal::pac, peripherals = false)]
 mod app {
@@ -41,13 +43,7 @@ mod app {
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("Init");
 
-        let systick_mono_token = rtic_monotonics::create_systick_token!();
-
-        Systick::start(
-            cx.core.SYST,
-            board::CORE_FREQUENCY.raw(),
-            systick_mono_token,
-        );
+        Mono::start(cx.core.SYST, board::CORE_FREQUENCY.raw());
 
         // Get board resources
         let Board { led_blue, usb, .. } = Board::take();
