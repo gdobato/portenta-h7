@@ -12,7 +12,9 @@ use portenta_h7::{
     led,
 };
 use rtic::app;
-use rtic_monotonics::systick::*;
+use rtic_monotonics::systick::prelude::*;
+
+systick_monotonic!(Mono, 1000);
 
 #[app(device = portenta_h7::hal::pac, peripherals = false, dispatchers = [SPI1])]
 mod app {
@@ -31,12 +33,8 @@ mod app {
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
         info!("Init");
-        let systick_mono_token = rtic_monotonics::create_systick_token!();
-        Systick::start(
-            cx.core.SYST,
-            board::CORE_FREQUENCY.raw(),
-            systick_mono_token,
-        );
+
+        Mono::start(cx.core.SYST, board::CORE_FREQUENCY.raw());
 
         // Get board resources
         let Board {
@@ -66,7 +64,7 @@ mod app {
     async fn blink_led_red(cx: blink_led_red::Context) {
         loop {
             cx.local.led_red.toggle();
-            Systick::delay(500.millis()).await;
+            Mono::delay(500.millis()).await;
         }
     }
 
@@ -74,7 +72,7 @@ mod app {
     async fn blink_led_green(cx: blink_led_green::Context) {
         loop {
             cx.local.led_green.toggle();
-            Systick::delay(1000.millis()).await;
+            Mono::delay(1000.millis()).await;
         }
     }
 
@@ -82,7 +80,7 @@ mod app {
     async fn blink_led_blue(cx: blink_led_blue::Context) {
         loop {
             cx.local.led_blue.toggle();
-            Systick::delay(1000.millis()).await;
+            Mono::delay(1000.millis()).await;
         }
     }
 }
