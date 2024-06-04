@@ -161,7 +161,9 @@ mod app {
                         }
                     }
                 }
-                _ => error!("Msg receive error"),
+                Err(_) => {
+                    error!("Error receiving message");
+                }
             }
         }
     }
