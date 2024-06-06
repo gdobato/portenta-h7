@@ -42,7 +42,7 @@ impl Led {
         *self as u8
     }
 
-    pub fn from_u8(value: u8) -> Option<Self> {
+    pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             0xAA => Some(Self::Red),
             0xBB => Some(Self::Green),
@@ -63,7 +63,7 @@ impl Action {
         *self as u8
     }
 
-    pub fn from_u8(value: u8) -> Option<Self> {
+    pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
             0x01 => Some(Self::On),
             0x02 => Some(Self::Off),
@@ -147,18 +147,18 @@ mod app {
             let msg = receiver.recv().await;
             match msg {
                 Ok(data) => {
-                    if let Some(led) = Led::from_u8(data[0]) {
-                        if let Some(action) = Action::from_u8(data[1]) {
-                            match (led, action) {
-                                (Led::Red, Action::On) => led_red.on(),
-                                (Led::Red, Action::Off) => led_red.off(),
-                                (Led::Green, Action::On) => led_green.on(),
-                                (Led::Green, Action::Off) => led_green.off(),
-                                (Led::Blue, Action::On) => led_blue.on(),
-                                (Led::Blue, Action::Off) => led_blue.off(),
-                            }
-                            debug!("Received: {:?} {:?}", led, action);
+                    if let (Some(led), Some(action)) =
+                        (Led::from_u8(data[0]), Action::from_u8(data[1]))
+                    {
+                        match (led, action) {
+                            (Led::Red, Action::On) => led_red.on(),
+                            (Led::Red, Action::Off) => led_red.off(),
+                            (Led::Green, Action::On) => led_green.on(),
+                            (Led::Green, Action::Off) => led_green.off(),
+                            (Led::Blue, Action::On) => led_blue.on(),
+                            (Led::Blue, Action::Off) => led_blue.off(),
                         }
+                        debug!("Received: {:?} {:?}", led, action);
                     }
                 }
                 Err(_) => {
