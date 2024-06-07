@@ -21,11 +21,7 @@ mod app {
     struct Shared {}
 
     #[local]
-    struct Local {
-        led_red: LedRed,
-        led_green: LedGreen,
-        led_blue: LedBlue,
-    }
+    struct Local {}
 
     #[init]
     fn init(cx: init::Context) -> (Shared, Local) {
@@ -43,41 +39,34 @@ mod app {
 
         #[cfg(debug_assertions)]
         info!("spawning tasks");
-        let _ = blink_led_red::spawn();
-        let _ = blink_led_green::spawn();
-        let _ = blink_led_blue::spawn();
+        let _ = blink_led_red::spawn(led_red);
+        let _ = blink_led_green::spawn(led_green);
+        let _ = blink_led_blue::spawn(led_blue);
 
-        (
-            Shared {},
-            Local {
-                led_red,
-                led_green,
-                led_blue,
-            },
-        )
+        (Shared {}, Local {})
     }
 
-    #[task(local = [led_red])]
-    async fn blink_led_red(cx: blink_led_red::Context) {
+    #[task]
+    async fn blink_led_red(_cx: blink_led_red::Context, mut led: LedRed) {
         loop {
-            cx.local.led_red.toggle();
+            led.toggle();
             Mono::delay(500.millis()).await;
         }
     }
 
-    #[task(local = [led_green])]
-    async fn blink_led_green(cx: blink_led_green::Context) {
+    #[task]
+    async fn blink_led_green(_cx: blink_led_green::Context, mut led: LedGreen) {
         loop {
-            cx.local.led_green.toggle();
+            led.toggle();
             Mono::delay(1000.millis()).await;
         }
     }
 
-    #[task(local = [led_blue])]
-    async fn blink_led_blue(cx: blink_led_blue::Context) {
+    #[task]
+    async fn blink_led_blue(_cx: blink_led_blue::Context, mut led: LedBlue) {
         loop {
-            cx.local.led_blue.toggle();
-            Mono::delay(1000.millis()).await;
+            led.toggle();
+            Mono::delay(2000.millis()).await;
         }
     }
 }
