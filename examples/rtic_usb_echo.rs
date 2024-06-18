@@ -9,7 +9,10 @@
 #![no_main]
 
 use defmt::{error, info};
-use portenta_h7::board::{self, Board, LedGreen, LedRed, UsbBusImpl};
+use portenta_h7::board::{
+    self,
+    non_async_impl::{Board, LedGreen, LedRed, UsbBusImpl},
+};
 use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 use rtic_sync::{channel::*, make_channel};

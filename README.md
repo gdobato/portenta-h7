@@ -43,9 +43,9 @@ To build an example, run the following command:
 ```
 cargo <example_name> [--release]
 ```
-For instance, to build `blinky`:
+For instance, to build `rtic_blinky`:
 ```
-cargo blinky
+cargo rtic_blinky
 ```
 ## Flash with DFU (USB)
 1. If not already, install [dfu-utils](https://dfu-util.sourceforge.net/) on your system.
@@ -55,17 +55,17 @@ cargo blinky
    ```
    cargo <example_name>-bin
    ```
-   For example, to generate the target binary for `blinky`, run the following command:
+   For example, to generate the target binary for `rtic_blinky`, run the following command:
    ```
-   cargo blinky-bin
+   cargo rtic_blinky-bin
    ```
 4. Flash the binary to the target by running the following command:
    ```
    dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D <binary_path>
    ```
-   For example, to flash `blinky`, run the following command:
+   For example, to flash `rtic_blinky`, run the following command:
    ```
-   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D target/thumbv7em-none-eabihf/release/examples/blinky.bin
+   dfu-util -a 0 -d 2341:035b --dfuse-address=0x08040000:leave -D target/thumbv7em-none-eabihf/release/examples/rtic_blinky.bin
    ```
 ## Flash with debug probe (JLink, ST-Link)
 1. Connect the probe to the JTAG port of the breakout board.
@@ -73,8 +73,8 @@ cargo blinky
    ```
    cargo  <example_name>-probe [--release]
    ```
-   For example, to flash `blinky`, run the following command:
+   For example, to flash `rtic_blinky`, run the following command:
    ```
-   cargo blinky-probe
+   cargo rtic_blinky-probe
    ```
    
