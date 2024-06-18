@@ -1,4 +1,4 @@
-//! Example Blinky
+//! Example of blinky
 //!
 //! Toggles the 3 user LEDs with a different frequency
 //!
@@ -7,7 +7,10 @@
 #![no_main]
 
 use defmt::info;
-use portenta_h7::board::{self, Board, LedBlue, LedGreen, LedRed};
+use portenta_h7::board::{
+    self,
+    non_async_impl::{Board, LedBlue, LedGreen, LedRed},
+};
 use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 

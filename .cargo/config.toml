@@ -5,17 +5,18 @@ ee = "embed --example"
 oe = "objcopy --example"
 
 # Aliases
-blinky = "be blinky"
-blinky-probe = "ee blinky"
-blinky-bin = "oe blinky --release -- -O binary target/thumbv7em-none-eabihf/release/examples/blinky.bin"
+# TODO: Automate all this
+rtic_blinky = "be rtic_blinky"
+rtic_blinky-probe = "ee rtic_blinky"
+rtic_blinky-bin = "oe rtic_blinky --release -- -O binary target/thumbv7em-none-eabihf/release/examples/rtic_blinky.bin"
 
-usb_echo = "be usb_echo"
-usb_echo-probe = "ee usb_echo"
-usb_echo-bin = "oe usb_echo --release -- -O binary target/thumbv7em-none-eabihf/release/examples/usb_echo.bin"
+rtic_usb_echo = "be rtic_usb_echo"
+rtic_usb_echo-probe = "ee rtic_usb_echo"
+rtic_usb_echo-bin = "oe rtic_usb_echo --release -- -O binary target/thumbv7em-none-eabihf/release/examples/rtic_usb_echo.bin"
 
-usb_led_ctrl = "be usb_led_ctrl"
-usb_led_ctrl-probe = "ee usb_led_ctrl"
-usb_led_ctrl-bin = "oe usb_led_ctrl --release -- -O binary target/thumbv7em-none-eabihf/release/examples/usb_led_ctrl.bin"
+rtic_usb_led_ctrl = "be rtic_usb_led_ctrl"
+rtic_usb_led_ctrl-probe = "ee rtic_usb_led_ctrl"
+rtic_usb_led_ctrl-bin = "oe rtic_usb_led_ctrl --release -- -O binary target/thumbv7em-none-eabihf/release/examples/rtic_usb_led_ctrl.bin"
 
 [build]
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)

@@ -1,19 +1,20 @@
 //! Example USB LED Control
 //!
 //! Controls LEDs over USB using the USB Device Class (CDC) for communication.
-//!
 //! The `Led` enum represents the different LEDs that can be controlled: Red (`0xAA`), Green (`0xBB`), and Blue (`0xCC`).
-//!
 //! The `Action` enum represents the actions that can be performed on an LED: turning it on (`0x01`) or off (`0x02`).
-//!
 //! To control an LED, send the hexadecimal value of the LED followed by the hexadecimal value of the action. For example, to turn the red LED on, send `0xAA 0x01`.
+//!
 
 #![no_std]
 #![no_main]
 
 use core::mem::size_of;
 use defmt::{debug, error, info};
-use portenta_h7::board::{self, Board, LedBlue, LedGreen, LedRed, UsbBusImpl};
+use portenta_h7::board::{
+    self,
+    non_async_impl::{Board, LedBlue, LedGreen, LedRed, UsbBusImpl},
+};
 use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 use rtic_sync::{channel::*, make_channel};
