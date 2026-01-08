@@ -1,0 +1,32 @@
+[tasks.build-release]
+description = "Build the project in release mode"
+command = "cargo"
+args = ["build", "--example", "${CARGO_MAKE_TASK_ARGS}", "--release"]
+
+[tasks.objcopy]
+description = "Convert ELF to binary"
+command = "rust-objcopy"
+args = [
+    "-O", "binary",
+    "target/thumbv7em-none-eabihf/release/examples/${CARGO_MAKE_TASK_ARGS}",
+    "target/thumbv7em-none-eabihf/release/examples/${CARGO_MAKE_TASK_ARGS}.bin"
+]
+
+[tasks.flash]
+description = "Flash binary via DFU"
+command = "dfu-util"
+args = [
+    "-a", "0",
+    "-d", "2341:035b",
+    "--dfuse-address=0x08040000:leave",
+    "-D", "target/thumbv7em-none-eabihf/release/examples/${CARGO_MAKE_TASK_ARGS}.bin"
+]
+
+[tasks.build-flash]
+description = "Build, convert to binary, and flash via DFU"
+dependencies = ["build-release", "objcopy", "flash"]
+
+[tasks.default]
+description = "Build and flash rtic_usb_echo example"
+command = "cargo"
+args = ["make", "build-flash", "rtic_usb_echo"]

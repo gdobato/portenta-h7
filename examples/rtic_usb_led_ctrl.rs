@@ -19,7 +19,7 @@ use rtic::app;
 use rtic_monotonics::systick::prelude::*;
 use rtic_sync::{channel::*, make_channel};
 use static_cell::StaticCell;
-use usb_device::{class_prelude::UsbBusAllocator, prelude::*};
+use usb_device::{class_prelude::UsbBusAllocator, device::UsbRev, prelude::*};
 use usbd_serial::CdcAcmClass;
 
 systick_monotonic!(Mono, 1000);
@@ -110,7 +110,8 @@ mod app {
         ));
         let usb_serial_port = usbd_serial::CdcAcmClass::new(usb_bus, USB_MAX_PACKET_SIZE as u16);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(0x1234, 0xABCD))
-            .device_class(usbd_serial::USB_CLASS_CDC)
+            .usb_rev(UsbRev::Usb200)
+            .composite_with_iads()
             .max_packet_size_0(64)
             .unwrap()
             .strings(&[StringDescriptors::default()
