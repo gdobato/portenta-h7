@@ -3,6 +3,9 @@ name = "portenta-h7"
 version = "0.4.0"
 edition = "2021"
 
+[features]
+async = []
+
 [dependencies]
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
@@ -15,7 +18,9 @@ defmt = { version = "0.3", features = ["encoding-rzcobs"] }
 defmt-brtt = { version = "0.1", default-features = false, features = ["rtt"] }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 embedded-hal-v1 = { version = "1.0.0", package = "embedded-hal" }
-embedded-hal-v0 = { version = "0.2.6", package = "embedded-hal", features = ["unproven"] }
+embedded-hal-v0 = { version = "0.2.6", package = "embedded-hal", features = [
+    "unproven",
+] }
 embedded-hal-async = "1.0.0"
 rtic-sync = "1.3.0"
 fugit = "0.3.7"
